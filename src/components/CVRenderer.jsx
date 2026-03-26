@@ -44,8 +44,73 @@ const SkillsList = ({ skills }) => (
   </div>
 );
 
-const CVRenderer = ({ data }) => {
+const defaultSectionOrder = ["summary", "experience", "education", "certifications", "skills"];
+
+const sectionTitles = {
+  summary: "Summary",
+  experience: "Experience",
+  education: "Education",
+  certifications: "Certifications",
+  skills: "Skills"
+};
+
+const CVRenderer = ({ data, sectionOrder = defaultSectionOrder }) => {
   const { cv, sections } = data;
+  const orderedSections = sectionOrder.filter((key) => Array.isArray(sections[key]) && sections[key].length > 0);
+
+  const renderSection = (key) => {
+    if (key === "summary") {
+      return (
+        <Section title={sectionTitles[key]}>
+          {sections.summary.map((text, idx) => (
+            <p key={`summary-${idx}`} className="cv-summary-paragraph">
+              {renderInline(text)}
+            </p>
+          ))}
+        </Section>
+      );
+    }
+
+    if (key === "experience") {
+      return (
+        <Section title={sectionTitles[key]}>
+          {sections.experience.map((item, idx) => (
+            <ExperienceEntry key={`experience-${idx}`} item={item} />
+          ))}
+        </Section>
+      );
+    }
+
+    if (key === "education") {
+      return (
+        <Section title={sectionTitles[key]}>
+          {sections.education.map((item, idx) => (
+            <EducationEntry key={`education-${idx}`} item={item} />
+          ))}
+        </Section>
+      );
+    }
+
+    if (key === "certifications") {
+      return (
+        <Section title={sectionTitles[key]}>
+          {sections.certifications.map((item, idx) => (
+            <CertificationEntry key={`certification-${idx}`} item={item} />
+          ))}
+        </Section>
+      );
+    }
+
+    if (key === "skills") {
+      return (
+        <Section title={sectionTitles[key]}>
+          <SkillsList skills={sections.skills} />
+        </Section>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="cv-document" id="cv-document">
@@ -53,46 +118,9 @@ const CVRenderer = ({ data }) => {
         <h1>{cv.name}</h1>
         <ContactLine contact={cv.contact ?? {}} />
       </header>
-
-      {sections.summary.length > 0 && (
-        <Section title="Summary">
-          {sections.summary.map((text, idx) => (
-            <p key={`summary-${idx}`} className="cv-summary-paragraph">
-              {renderInline(text)}
-            </p>
-          ))}
-        </Section>
-      )}
-
-      {sections.experience.length > 0 && (
-        <Section title="Experience">
-          {sections.experience.map((item, idx) => (
-            <ExperienceEntry key={`experience-${idx}`} item={item} />
-          ))}
-        </Section>
-      )}
-
-      {sections.education.length > 0 && (
-        <Section title="Education">
-          {sections.education.map((item, idx) => (
-            <EducationEntry key={`education-${idx}`} item={item} />
-          ))}
-        </Section>
-      )}
-
-      {sections.certifications.length > 0 && (
-        <Section title="Certifications">
-          {sections.certifications.map((item, idx) => (
-            <CertificationEntry key={`certification-${idx}`} item={item} />
-          ))}
-        </Section>
-      )}
-
-      {sections.skills.length > 0 && (
-        <Section title="Skills">
-          <SkillsList skills={sections.skills} />
-        </Section>
-      )}
+      {orderedSections.map((key) => (
+        <div key={key}>{renderSection(key)}</div>
+      ))}
     </div>
   );
 };
